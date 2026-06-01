@@ -1,0 +1,83 @@
+name: GitHub Classroom Workflow
+
+on:
+  - push
+  - workflow_dispatch
+
+permissions:
+  checks: write
+  actions: read
+  contents: read
+
+jobs:
+  build:
+    name: Autograding
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+
+      - name: Root Route
+        id: test-root
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: 'GET /'
+          setup-command: ''
+          command: 'npm test -- -t "GET / debería devolver texto de bienvenida"'
+          timeout: 10
+          max-score: 20
+
+      - name: Productos Route
+        id: test-productos
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: 'GET /productos'
+          setup-command: ''
+          command: 'npm test -- -t "GET /productos debería devolver el arreglo de productos en formato JSON"'
+          timeout: 10
+          max-score: 20
+
+      - name: Productos Query Route
+        id: test-productos-query
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: 'GET /productos?categoria=electronica'
+          setup-command: ''
+          command: 'npm test -- -t "GET /productos\?categoria=electronica debería devolver productos filtrados en JSON"'
+          timeout: 10
+          max-score: 20
+
+      - name: Usuarios Param Route
+        id: test-usuarios
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: 'GET /usuarios/2'
+          setup-command: ''
+          command: 'npm test -- -t "GET /usuarios/2 debería devolver el usuario correspondiente en JSON"'
+          timeout: 10
+          max-score: 20
+
+      - name: Not Found Route
+        id: test-404
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: 'GET /ruta-no-existente'
+          setup-command: ''
+          command: 'npm test -- -t "GET /ruta-no-existente debería devolver 404"'
+          timeout: 10
+          max-score: 20
+
+      - name: Autograding Reporter
+        uses: classroom-resources/autograding-grading-reporter@v1
+        env:
+          TEST-ROOT_RESULTS: '${{steps.test-root.outputs.result}}'
+          TEST-PRODUCTOS_RESULTS: '${{steps.test-productos.outputs.result}}'
+          TEST-PRODUCTOS-QUERY_RESULTS: '${{steps.test-productos-query.outputs.result}}'
+          TEST-USUARIOS_RESULTS: '${{steps.test-usuarios.outputs.result}}'
+          TEST-404_RESULTS: '${{steps.test-404.outputs.result}}'
+        with:
+          runners: test-root,test-productos,test-productos-query,test-usuarios,test-404

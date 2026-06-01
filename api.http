@@ -1,0 +1,14 @@
+### Ruta raíz
+GET http://localhost:3000/
+
+### Productos (todos)
+GET http://localhost:3000/productos
+
+### Productos con Query String
+GET http://localhost:3000/productos?categoria=electronica
+
+### Usuarios con Parámetro de Ruta
+GET http://localhost:3000/usuarios/2
+
+### Ruta no existente (404)
+GET http://localhost:3000/ruta-no-existente
